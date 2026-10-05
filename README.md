@@ -10,6 +10,7 @@ Variant 25, RTU MIREA.
 - [x] Stage 3. VFS
 - [x] Stage 4. Main commands: ls, cd, tac, cal, rev
 - [x] Stage 5. Extra commands: rm, rmdir
+- [x] Stage 6. Tests (pytest)
 
 ## Run
 
