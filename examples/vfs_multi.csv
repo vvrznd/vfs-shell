@@ -1,0 +1,9 @@
+path,type,content,owner
+/,dir,,root
+/home,dir,,root
+/home/user,dir,,user
+/home/user/readme.txt,file,SGVsbG8=,user
+/home/user/notes.txt,file,V29ybGQ=,user
+/etc,dir,,root
+/etc/hosts,file,MTI3LjAuMC4x,root
+/tmp,dir,,root

@@ -1,0 +1,10 @@
+path,type,content,owner
+/,dir,,root
+/a,dir,,root
+/a/b,dir,,root
+/a/b/c,dir,,root
+/a/b/c/d,dir,,root
+/a/b/c/d/deep.txt,file,ZGVlcA==,user
+/home,dir,,root
+/home/user,dir,,user
+/home/user/readme.txt,file,SGVsbG8=,user
