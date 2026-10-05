@@ -133,6 +133,45 @@ def cmd_cal(ctx: ShellContext, args: list[str]) -> None:
     print(calendar.month(today.year, today.month))
 
 
+def _require_exists(ctx: ShellContext, path: str) -> None:
+    """Raise CommandError unless the path exists in the VFS."""
+    if path not in ctx.vfs:
+        raise CommandError(f"no such path: {path}")
+
+
+def _is_root(path: str) -> bool:
+    """Return True if path points to the VFS root."""
+    return path == "/" or path == ""
+
+
+def cmd_rm(ctx: ShellContext, args: list[str]) -> None:
+    """Remove a file from the VFS (in memory only)."""
+    if len(args) != 1:
+        raise CommandError("rm: exactly one file argument required")
+    path = ctx.vfs.resolve(ctx.cwd, args[0])
+    _require_exists(ctx, path)
+    node = ctx.vfs.get(path)
+    if node.kind == DIR_TYPE:
+        raise CommandError(f"rm: is a directory: {path}")
+    ctx.vfs.remove(path)
+
+
+def cmd_rmdir(ctx: ShellContext, args: list[str]) -> None:
+    """Remove an empty directory from the VFS (in memory only)."""
+    if len(args) != 1:
+        raise CommandError("rmdir: exactly one argument required")
+    path = ctx.vfs.resolve(ctx.cwd, args[0])
+    if _is_root(path):
+        raise CommandError("rmdir: cannot remove root directory")
+    _require_exists(ctx, path)
+    node = ctx.vfs.get(path)
+    if node.kind != DIR_TYPE:
+        raise CommandError(f"rmdir: not a directory: {path}")
+    if ctx.vfs.has_children(path):
+        raise CommandError(f"rmdir: directory not empty: {path}")
+    ctx.vfs.remove(path)
+
+
 CommandHandler = Callable[[ShellContext, list[str]], None]
 
 COMMANDS: dict[str, CommandHandler] = {
@@ -142,6 +181,8 @@ COMMANDS: dict[str, CommandHandler] = {
     "tac": cmd_tac,
     "rev": cmd_rev,
     "cal": cmd_cal,
+    "rm": cmd_rm,
+    "rmdir": cmd_rmdir,
 }
 
 

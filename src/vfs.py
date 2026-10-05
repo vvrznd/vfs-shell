@@ -126,6 +126,27 @@ class VirtualFileSystem:
             raise VfsError(f"not a file: {path}")
         return node.content
 
+    def has_children(self, path: str) -> bool:
+        """Return True if the directory has any children."""
+        prefix = path.rstrip("/") + "/"
+        for node_path in self.nodes:
+            if node_path.startswith(prefix) and node_path != path:
+                return True
+        return False
+
+    def remove(self, path: str) -> None:
+        """Remove a node from the VFS (in memory only).
+
+        Args:
+            path: Absolute path of the node to remove.
+
+        Raises:
+            VfsError: If path does not exist.
+        """
+        if path not in self.nodes:
+            raise VfsError(f"no such path: {path}")
+        del self.nodes[path]    
+
 
 def create_default_vfs(name: str = "vfs-default") -> VirtualFileSystem:
     """Create an empty VFS containing only the root directory."""

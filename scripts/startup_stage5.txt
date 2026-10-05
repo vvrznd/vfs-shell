@@ -1,0 +1,7 @@
+cd /home/user
+ls
+rm notes.txt
+ls
+cd /
+rmdir /tmp
+exit

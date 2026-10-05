@@ -1,0 +1,3 @@
+rmdir /home
+ls /home
+exit
