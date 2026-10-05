@@ -4,7 +4,7 @@ import os
 import socket
 import sys
 
-from .commands import COMMANDS, ExitShell
+from .commands import CommandError, ExitShell, dispatch
 from .parser import parse
 
 
@@ -27,14 +27,26 @@ def build_prompt() -> str:
     return f"{user}@{host}:{cwd}$ "
 
 
-def _dispatch(tokens: list[str]) -> None:
-    """Look up a command and run it, or print an error."""
-    name, args = tokens[0], tokens[1:]
-    handler = COMMANDS.get(name)
-    if handler is None:
-        print(f"error: unknown command: {name}", file=sys.stderr)
-        return
-    handler(args)
+def _execute(tokens: list[str]) -> bool:
+    """Run tokens through the dispatcher.
+
+    Args:
+        tokens: Parsed command line tokens.
+
+    Returns:
+        True if the command succeeded, False on error.
+    """
+    try:
+        dispatch(tokens)
+    except ExitShell:
+        raise
+    except CommandError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return False
+    except Exception as exc:  # noqa: BLE001
+        print(f"error: {exc}", file=sys.stderr)
+        return False
+    return True
 
 
 def run() -> int:
@@ -59,8 +71,6 @@ def run() -> int:
             continue
 
         try:
-            _dispatch(tokens)
+            _execute(tokens)
         except ExitShell:
             return 0
-        except Exception as exc:  # noqa: BLE001
-            print(f"error: {exc}", file=sys.stderr)

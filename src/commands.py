@@ -1,13 +1,17 @@
-"""Shell command implementations.
+"""Shell command implementations and dispatcher.
 
-On stage 1 all commands except exit are stubs: they just print
-their own name and arguments. Real logic will be added later.
+On stages 1-2 all commands except exit are stubs: they just print
+their own name and arguments. Real logic is added later.
 """
 from typing import Callable
 
 
 class ExitShell(Exception):
     """Raised by the exit command to stop the REPL."""
+
+
+class CommandError(Exception):
+    """Raised when a command cannot be executed."""
 
 
 def _print_stub(name: str, args: list[str]) -> None:
@@ -49,3 +53,20 @@ COMMANDS: dict[str, CommandHandler] = {
     "cd": cmd_cd,
     "exit": cmd_exit,
 }
+
+
+def dispatch(tokens: list[str]) -> None:
+    """Look up a command by name and run it.
+
+    Args:
+        tokens: Parsed tokens; tokens[0] is the command name,
+            the rest are arguments.
+
+    Raises:
+        CommandError: If the command name is not known.
+    """
+    name, args = tokens[0], tokens[1:]
+    handler = COMMANDS.get(name)
+    if handler is None:
+        raise CommandError(f"unknown command: {name}")
+    handler(args)

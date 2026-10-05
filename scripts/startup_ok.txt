@@ -1,0 +1,6 @@
+ls
+ls -la
+cd /home
+cd "my dir"
+ls "file with spaces"
+exit
