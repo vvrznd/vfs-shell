@@ -3,24 +3,19 @@ import argparse
 import sys
 
 from .config import Config, debug_dump
+from .context import ShellContext
 from .script_runner import run_script
 from .shell import build_prompt, run
 from .vfs import (
     VfsError,
+    VirtualFileSystem,
     create_default_vfs,
     load_from_csv,
 )
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    """Parse command line arguments.
-
-    Args:
-        argv: List of arguments (without the program name).
-
-    Returns:
-        Parsed namespace with vfs_path and script_path.
-    """
+    """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         prog="vfs-shell",
         description="Shell emulator with a virtual file system.",
@@ -40,15 +35,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _load_vfs(vfs_path: str | None):
-    """Load a VFS from disk or fall back to an empty one.
-
-    Args:
-        vfs_path: Path to the CSV source, or None for default.
-
-    Returns:
-        A loaded or default VirtualFileSystem.
-    """
+def _load_vfs(vfs_path: str | None) -> VirtualFileSystem:
+    """Load a VFS from disk or fall back to an empty one."""
     if not vfs_path:
         print("[debug] no --vfs-path given, using default empty VFS")
         return create_default_vfs()
@@ -63,15 +51,7 @@ def _load_vfs(vfs_path: str | None):
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Start the shell or run a startup script.
-
-    Args:
-        argv: Arguments passed to the program. If None, uses
-            sys.argv[1:].
-
-    Returns:
-        Exit code: 0 on success, non-zero on error.
-    """
+    """Start the shell or run a startup script."""
     if argv is None:
         argv = sys.argv[1:]
     args = parse_args(argv)
@@ -80,11 +60,12 @@ def main(argv: list[str] | None = None) -> int:
         script_path=args.script_path,
     )
     debug_dump(config)
-    _load_vfs(config.vfs_path)
+    vfs = _load_vfs(config.vfs_path)
+    ctx = ShellContext(vfs=vfs)
 
     if config.script_path:
-        return run_script(config.script_path, build_prompt)
-    return run()
+        return run_script(ctx, config.script_path, build_prompt)
+    return run(ctx)
 
 
 if __name__ == "__main__":

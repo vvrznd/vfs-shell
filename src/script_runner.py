@@ -8,25 +8,28 @@ import sys
 from typing import Callable
 
 from .commands import CommandError, ExitShell, dispatch
+from .context import ShellContext
 from .parser import parse
 
-PromptBuilder = Callable[[], str]
+PromptBuilder = Callable[[ShellContext], str]
 
 
-def _run_line(line: str, prompt: str) -> bool:
+def _run_line(ctx: ShellContext, line: str, prompt: str) -> bool:
     """Run a single script line.
 
     Args:
+        ctx: Shell context.
         line: Raw line from the script file.
         prompt: Prompt to print before the line.
 
     Returns:
-        True to continue, False to stop (error occurred).
+        True to continue, False to stop.
 
     Raises:
         ExitShell: If the line contains the exit command.
     """
     print(f"{prompt}{line}")
+    ctx.last_input = line
     try:
         tokens = parse(line)
     except ValueError as exc:
@@ -37,7 +40,7 @@ def _run_line(line: str, prompt: str) -> bool:
         return True
 
     try:
-        dispatch(tokens)
+        dispatch(ctx, tokens)
     except ExitShell:
         raise
     except CommandError as exc:
@@ -49,10 +52,13 @@ def _run_line(line: str, prompt: str) -> bool:
     return True
 
 
-def run_script(path: str, prompt_builder: PromptBuilder) -> int:
+def run_script(
+    ctx: ShellContext, path: str, prompt_builder: PromptBuilder
+) -> int:
     """Execute commands from a script file.
 
     Args:
+        ctx: Shell context.
         path: Path to the script file.
         prompt_builder: Callable that returns the prompt string.
 
@@ -68,9 +74,9 @@ def run_script(path: str, prompt_builder: PromptBuilder) -> int:
         return 1
 
     for line in lines:
-        prompt = prompt_builder()
+        prompt = prompt_builder(ctx)
         try:
-            ok = _run_line(line, prompt)
+            ok = _run_line(ctx, line, prompt)
         except ExitShell:
             return 0
         if not ok:

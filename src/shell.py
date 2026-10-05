@@ -1,43 +1,34 @@
 """Interactive shell (REPL)."""
 import getpass
-import os
 import socket
 import sys
 
 from .commands import CommandError, ExitShell, dispatch
+from .context import ShellContext
 from .parser import parse
 
 
-def _shorten_cwd(cwd: str, home: str) -> str:
-    """Replace the home prefix with ~ and normalize separators."""
-    normalized = cwd.replace("\\", "/")
-    home_norm = home.replace("\\", "/")
-    if normalized == home_norm:
-        return "~"
-    if normalized.startswith(home_norm + "/"):
-        return "~" + normalized[len(home_norm):]
-    return normalized
+def _username() -> str:
+    """Return the current OS username."""
+    return getpass.getuser()
 
 
-def build_prompt() -> str:
-    """Form the prompt from real OS data: user@host:cwd$ ."""
-    user = getpass.getuser()
-    host = socket.gethostname()
-    cwd = _shorten_cwd(os.getcwd(), os.path.expanduser("~"))
-    return f"{user}@{host}:{cwd}$ "
+def _hostname() -> str:
+    """Return the current OS hostname."""
+    return socket.gethostname()
 
 
-def _execute(tokens: list[str]) -> bool:
-    """Run tokens through the dispatcher.
+def build_prompt(ctx: ShellContext) -> str:
+    """Form the prompt: user@host:vfs_cwd$ ."""
+    user = _username()
+    host = _hostname()
+    return f"{user}@{host}:{ctx.cwd}$ "
 
-    Args:
-        tokens: Parsed command line tokens.
 
-    Returns:
-        True if the command succeeded, False on error.
-    """
+def _execute(ctx: ShellContext, tokens: list[str]) -> bool:
+    """Run tokens through the dispatcher."""
     try:
-        dispatch(tokens)
+        dispatch(ctx, tokens)
     except ExitShell:
         raise
     except CommandError as exc:
@@ -49,11 +40,11 @@ def _execute(tokens: list[str]) -> bool:
     return True
 
 
-def run() -> int:
+def run(ctx: ShellContext) -> int:
     """Run the REPL loop until exit or EOF."""
     while True:
         try:
-            line = input(build_prompt())
+            line = input(build_prompt(ctx))
         except EOFError:
             print()
             return 0
@@ -61,6 +52,7 @@ def run() -> int:
             print()
             continue
 
+        ctx.last_input = line
         try:
             tokens = parse(line)
         except ValueError as exc:
@@ -71,6 +63,6 @@ def run() -> int:
             continue
 
         try:
-            _execute(tokens)
+            _execute(ctx, tokens)
         except ExitShell:
             return 0

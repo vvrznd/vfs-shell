@@ -1,0 +1,12 @@
+ls
+cd /home/user
+ls
+ls -l
+tac readme.txt
+rev readme.txt
+cal
+cd ..
+ls
+cd /
+ls
+exit
