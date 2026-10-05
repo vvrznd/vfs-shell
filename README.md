@@ -5,7 +5,7 @@ Variant 25, RTU MIREA.
 
 ## Status
 
-- [ ] Stage 1. REPL
+- [x] Stage 1. REPL
 - [ ] Stage 2. Configuration
 - [ ] Stage 3. VFS
 - [ ] Stage 4. Main commands: ls, cd, tac, cal, rev
