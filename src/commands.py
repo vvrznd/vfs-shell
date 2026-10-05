@@ -6,7 +6,7 @@ directory inside it.
 """
 import calendar
 import datetime
-from typing import Callable
+from collections.abc import Callable
 
 from .context import ShellContext
 from .vfs import DIR_TYPE, VfsError
@@ -18,7 +18,7 @@ OWNER_WIDTH = 8
 SIZE_WIDTH = 6
 
 
-class ExitShell(Exception):
+class ExitShellError(Exception):
     """Raised by the exit command to stop the REPL."""
 
 
@@ -91,7 +91,7 @@ def cmd_cd(ctx: ShellContext, args: list[str]) -> None:
 
 def cmd_exit(ctx: ShellContext, args: list[str]) -> None:
     """Exit the shell."""
-    raise ExitShell()
+    raise ExitShellError()
 
 
 def cmd_tac(ctx: ShellContext, args: list[str]) -> None:
@@ -128,7 +128,9 @@ def cmd_cal(ctx: ShellContext, args: list[str]) -> None:
     """Print a calendar for the current month."""
     if args:
         raise CommandError("cal: no arguments supported yet")
-    today = datetime.date.today()
+    today = datetime.datetime.now(
+        tz=datetime.timezone.utc,
+    ).date()
     calendar.setfirstweekday(calendar.MONDAY)
     print(calendar.month(today.year, today.month))
 

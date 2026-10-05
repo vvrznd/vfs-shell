@@ -19,7 +19,7 @@ class VfsError(Exception):
     """Base error for VFS problems."""
 
 
-class VfsNotFound(VfsError):
+class VfsNotFoundError(VfsError):
     """Raised when the CSV file cannot be found."""
 
 
@@ -36,7 +36,9 @@ class VfsNode:
         kind: Either 'dir' or 'file'.
         content: Raw bytes for files, empty for directories.
         owner: Owner name.
+
     """
+
     path: str
     kind: str
     content: bytes = b""
@@ -49,16 +51,25 @@ class VirtualFileSystem:
     Attributes:
         name: Human-readable name of this VFS instance.
         nodes: Mapping from absolute path to VfsNode.
+
     """
 
     def __init__(self, name: str = "vfs-default") -> None:
+        """Create a new empty VFS.
+
+        Args:
+            name: Human-readable VFS name.
+
+        """
         self.name = name
         self.nodes: dict[str, VfsNode] = {}
 
     def __len__(self) -> int:
+        """Return the number of nodes in the VFS."""
         return len(self.nodes)
 
     def __contains__(self, path: str) -> bool:
+        """Return True if path exists in the VFS."""
         return path in self.nodes
 
     def add(self, node: VfsNode) -> None:
@@ -142,6 +153,7 @@ class VirtualFileSystem:
 
         Raises:
             VfsError: If path does not exist.
+
         """
         if path not in self.nodes:
             raise VfsError(f"no such path: {path}")
@@ -166,11 +178,12 @@ def load_from_csv(path: str, name: str | None = None) -> VirtualFileSystem:
         A fully loaded VirtualFileSystem.
 
     Raises:
-        VfsNotFound: If the file does not exist.
+        VfsNotFoundError: If the file does not exist.
         VfsFormatError: If the CSV structure or content is bad.
+
     """
     if not os.path.isfile(path):
-        raise VfsNotFound(f"file not found: {path}")
+        raise VfsNotFoundError(f"file not found: {path}")
     try:
         with open(path, "r", encoding="utf-8", newline="") as handle:
             rows = list(csv.DictReader(handle))

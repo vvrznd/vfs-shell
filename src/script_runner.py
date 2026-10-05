@@ -5,9 +5,9 @@ same dispatcher as the interactive shell, and stops at the first
 error. Both input and output are shown, imitating a dialogue.
 """
 import sys
-from typing import Callable
+from collections.abc import Callable
 
-from .commands import CommandError, ExitShell, dispatch
+from .commands import CommandError, ExitShellError, dispatch
 from .context import ShellContext
 from .parser import parse
 
@@ -26,7 +26,8 @@ def _run_line(ctx: ShellContext, line: str, prompt: str) -> bool:
         True to continue, False to stop.
 
     Raises:
-        ExitShell: If the line contains the exit command.
+        ExitShellError: If the line contains the exit command.
+
     """
     print(f"{prompt}{line}")
     ctx.last_input = line
@@ -41,7 +42,7 @@ def _run_line(ctx: ShellContext, line: str, prompt: str) -> bool:
 
     try:
         dispatch(ctx, tokens)
-    except ExitShell:
+    except ExitShellError:
         raise
     except CommandError as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -65,6 +66,7 @@ def run_script(
     Returns:
         0 on success, 1 if the script could not be read or an
         error occurred during execution.
+
     """
     try:
         with open(path, "r", encoding="utf-8") as handle:
@@ -77,7 +79,7 @@ def run_script(
         prompt = prompt_builder(ctx)
         try:
             ok = _run_line(ctx, line, prompt)
-        except ExitShell:
+        except ExitShellError:
             return 0
         if not ok:
             return 1

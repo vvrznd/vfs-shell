@@ -9,7 +9,9 @@ class Config:
     Attributes:
         vfs_path: Path to the physical VFS location, or None.
         script_path: Path to the startup script, or None.
+
     """
+
     vfs_path: str | None = None
     script_path: str | None = None
 
@@ -19,6 +21,7 @@ def debug_dump(config: Config) -> None:
 
     Args:
         config: Configuration to print.
+
     """
     print("[debug] configuration:")
     print(f"[debug]   vfs_path    = {config.vfs_path!r}")

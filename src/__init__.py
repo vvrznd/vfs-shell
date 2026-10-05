@@ -1,0 +1,1 @@
+"""VFS shell emulator package."""

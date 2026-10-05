@@ -3,7 +3,7 @@ import getpass
 import socket
 import sys
 
-from .commands import CommandError, ExitShell, dispatch
+from .commands import CommandError, ExitShellError, dispatch
 from .context import ShellContext
 from .parser import parse
 
@@ -29,7 +29,7 @@ def _execute(ctx: ShellContext, tokens: list[str]) -> bool:
     """Run tokens through the dispatcher."""
     try:
         dispatch(ctx, tokens)
-    except ExitShell:
+    except ExitShellError:
         raise
     except CommandError as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -64,5 +64,5 @@ def run(ctx: ShellContext) -> int:
 
         try:
             _execute(ctx, tokens)
-        except ExitShell:
+        except ExitShellError:
             return 0

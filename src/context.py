@@ -12,7 +12,9 @@ class ShellContext:
         vfs: Virtual file system in use.
         cwd: Current working directory inside the VFS.
         last_input: Last raw input line (used by rev when no file).
+
     """
+
     vfs: VirtualFileSystem
     cwd: str = "/"
     last_input: str = ""

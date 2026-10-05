@@ -17,6 +17,7 @@ def parse(line: str) -> list[str]:
 
     Raises:
         ValueError: If the line contains unbalanced quotes.
+
     """
     stripped = line.strip()
     if not stripped:
