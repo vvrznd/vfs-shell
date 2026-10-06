@@ -34,7 +34,7 @@ def _execute(ctx: ShellContext, tokens: list[str]) -> bool:
     except CommandError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return False
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         print(f"error: {exc}", file=sys.stderr)
         return False
     return True
